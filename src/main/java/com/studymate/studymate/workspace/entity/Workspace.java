@@ -55,6 +55,11 @@ public class Workspace {
         this.description = description;
     }
 
+    public void updateDetails(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
     public Long getId() {
         return id;
     }
