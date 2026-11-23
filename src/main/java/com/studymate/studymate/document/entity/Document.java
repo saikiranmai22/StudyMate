@@ -57,11 +57,12 @@ public class Document {
         // Required by JPA
     }
 
-    public Document(Workspace workspace, String originalFilename, String storageKey, Long fileSizeBytes) {
+    public Document(Workspace workspace, String originalFilename, String storageKey, Long fileSizeBytes, DocumentStatus status) {
         this.workspace = workspace;
         this.originalFilename = originalFilename;
         this.storageKey = storageKey;
         this.fileSizeBytes = fileSizeBytes;
+        this.status=status;
     }
 
     //These methods make status transitions explicit.

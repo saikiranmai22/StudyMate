@@ -75,12 +75,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.setContext(context); //Makes that container available to Spring Security
                 //Spring Security can now access the authenticated user's details and authorities during the rest of request processing.
                 //a controller can access the current user through Spring Security's authentication information.
+
+                System.out.println("JWT authenticated user: " + email);
             }
         }catch (JwtException | IllegalArgumentException | UsernameNotFoundException ex){
             SecurityContextHolder.clearContext();
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"Invalid or expired JWT");
             return;
         }
+        System.out.println("Request: " + request.getMethod() + " " +
+                request.getRequestURI());
+
+        System.out.println("Authenticated: " +
+                SecurityContextHolder.getContext().getAuthentication().isAuthenticated());
+
         filterChain.doFilter(request,response);
         //Spring Security authorizes the request and, if permitted, it reaches the controller.
     }
