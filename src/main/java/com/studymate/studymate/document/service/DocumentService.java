@@ -1,6 +1,7 @@
 package com.studymate.studymate.document.service;
 
 import com.studymate.studymate.document.dto.DocumentResponse;
+import com.studymate.studymate.document.dto.PdfExtractionResult;
 import com.studymate.studymate.document.entity.Document;
 import com.studymate.studymate.document.entity.DocumentStatus;
 import com.studymate.studymate.document.repository.DocumentRepository;
@@ -22,13 +23,15 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final WorkspaceRepository workspaceRepository;
     private final FileStorageService fileStorageService;
+    private final PdfProcessingService pdfProcessingService;
 
     private static final long MAX_FILE_SIZE= 20L * 1024*1024;
 
-    public DocumentService(DocumentRepository documentRepository, WorkspaceRepository workspaceRepository, FileStorageService fileStorageService) {
+    public DocumentService(DocumentRepository documentRepository, WorkspaceRepository workspaceRepository, FileStorageService fileStorageService, PdfProcessingService pdfProcessingService) {
         this.documentRepository = documentRepository;
         this.workspaceRepository = workspaceRepository;
         this.fileStorageService = fileStorageService;
+        this.pdfProcessingService=pdfProcessingService;
     }
 
     private void validatePdf(MultipartFile file){
@@ -71,26 +74,33 @@ public class DocumentService {
 
         validatePdf(file);
 
-        String storageKey=null;
         try{
-            //store the pdf
-            storageKey= fileStorageService.store(file);
-            //create the document metadata
-            Document document= new Document(workspace, file.getOriginalFilename(), storageKey, file.getSize(), DocumentStatus.PROCESSING);
+            byte[] pdfBytes=file.getBytes(); //Read uploaded file bytes
+            PdfExtractionResult extractionResult=pdfProcessingService.extractText(pdfBytes); //Extract and validate PDF contents
+            //If the PDF is corrupt or unsupported, we reject it before saving it to local storage or creating a database record. This avoids storing invalid uploads.
 
-            Document savedDocument = documentRepository.save(document);
-            return toResponse(savedDocument);
-        }catch (IOException | RuntimeException e){
-            //If file storage succeeded but the database operation failed,
-            // attempt to remove the stored file.
-            if(storageKey!=null){
+            //store the pdf
+            String storageKey= fileStorageService.store(file);
+
+            try{
+                //create the document metadata
+                Document document= new Document(workspace, file.getOriginalFilename(), storageKey, file.getSize(), DocumentStatus.PROCESSING);
+                document.setPageCount(extractionResult.pageCount());
+                Document savedDocument = documentRepository.save(document);
+                return toResponse(savedDocument);
+            }catch (RuntimeException e){
+                //If file storage succeeded but the database operation failed,
+                // attempt to remove the stored file.
                 try{
                     fileStorageService.delete(storageKey);
                 }catch (IOException cleanupException){
                     e.addSuppressed(cleanupException);
                 }
+                throw e;
             }
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not upload document", e);
+
+        }catch (IOException e){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not read or store uploaded PDF", e);
         }
     }
 

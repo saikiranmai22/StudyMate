@@ -104,6 +104,10 @@ public class Document {
         return pageCount;
     }
 
+    public void setPageCount(Integer pageCount) {
+        this.pageCount = pageCount;
+    }
+
     public DocumentStatus getStatus() {
         return status;
     }
