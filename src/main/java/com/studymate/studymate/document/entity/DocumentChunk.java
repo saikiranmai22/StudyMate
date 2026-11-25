@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.springframework.resilience.annotation.ConcurrencyLimit;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,7 +54,7 @@ public class DocumentChunk {
         // Required by JPA
     }
 
-    public DocumentChunk(Document document, Integer chunkIndex, Integer pageStart, Integer pageEnd, String content, List<Double> embedding) {
+    public DocumentChunk(Document document, Integer chunkIndex, Integer pageStart, Integer pageEnd, String content,List<Double> embedding) {
         this.document = document;
         this.chunkIndex = chunkIndex;
         this.pageStart = pageStart;
@@ -88,6 +89,10 @@ public class DocumentChunk {
 
     public List<Double> getEmbedding() {
         return embedding;
+    }
+
+    public void setEmbedding(List<Double> embedding) {
+        this.embedding = embedding;
     }
 
     public LocalDateTime getCreatedAt() {

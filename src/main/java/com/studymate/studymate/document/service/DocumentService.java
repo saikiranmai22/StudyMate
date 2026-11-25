@@ -3,7 +3,9 @@ package com.studymate.studymate.document.service;
 import com.studymate.studymate.document.dto.DocumentResponse;
 import com.studymate.studymate.document.dto.PdfExtractionResult;
 import com.studymate.studymate.document.entity.Document;
+import com.studymate.studymate.document.entity.DocumentChunk;
 import com.studymate.studymate.document.entity.DocumentStatus;
+import com.studymate.studymate.document.repository.DocumentChunkRepository;
 import com.studymate.studymate.document.repository.DocumentRepository;
 import com.studymate.studymate.user.entity.User;
 import com.studymate.studymate.workspace.entity.Workspace;
@@ -24,14 +26,21 @@ public class DocumentService {
     private final WorkspaceRepository workspaceRepository;
     private final FileStorageService fileStorageService;
     private final PdfProcessingService pdfProcessingService;
+    private final DocumentChunkingService documentChunkingService;
+    private final DocumentChunkRepository documentChunkRepository;
+    private final DocumentEmbeddingService documentEmbeddingService;
 
     private static final long MAX_FILE_SIZE= 20L * 1024*1024;
 
-    public DocumentService(DocumentRepository documentRepository, WorkspaceRepository workspaceRepository, FileStorageService fileStorageService, PdfProcessingService pdfProcessingService) {
+    public DocumentService(DocumentRepository documentRepository, WorkspaceRepository workspaceRepository, FileStorageService fileStorageService, PdfProcessingService pdfProcessingService,DocumentChunkingService documentChunkingService,
+                           DocumentChunkRepository documentChunkRepository, DocumentEmbeddingService documentEmbeddingService) {
         this.documentRepository = documentRepository;
         this.workspaceRepository = workspaceRepository;
         this.fileStorageService = fileStorageService;
         this.pdfProcessingService=pdfProcessingService;
+        this.documentChunkingService = documentChunkingService;
+        this.documentChunkRepository = documentChunkRepository;
+        this.documentEmbeddingService=documentEmbeddingService;
     }
 
     private void validatePdf(MultipartFile file){
@@ -86,7 +95,16 @@ public class DocumentService {
                 //create the document metadata
                 Document document= new Document(workspace, file.getOriginalFilename(), storageKey, file.getSize(), DocumentStatus.PROCESSING);
                 document.setPageCount(extractionResult.pageCount());
+
                 Document savedDocument = documentRepository.save(document);
+                List<DocumentChunk> chunks = documentChunkingService.createChunks(savedDocument, extractionResult.pages());
+
+                // Generate embeddings for all chunks
+                documentEmbeddingService.generateEmbeddings(savedDocument, chunks);
+                documentChunkRepository.saveAll(chunks);
+                // Save document's embedding metadata and COMPLETED status
+                documentRepository.save(savedDocument);
+
                 return toResponse(savedDocument);
             }catch (RuntimeException e){
                 //If file storage succeeded but the database operation failed,
