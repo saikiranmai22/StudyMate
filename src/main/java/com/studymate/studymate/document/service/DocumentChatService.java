@@ -29,7 +29,6 @@ public class DocumentChatService {
         this.geminiChatClient = geminiChatClient;
     }
 
-    @Transactional(readOnly = true)
     public ChatResponse askQuestion(Long workspaceId, Long documentId, User user, ChatRequest request){
         //Verify workspace ownership
         workspaceRepository.findByIdAndUser_Id(workspaceId,user.getId()).orElseThrow(()-> new IllegalStateException("Workspace not found"));

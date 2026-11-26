@@ -52,12 +52,6 @@ public class DocumentController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{documentId}/search")
-    public ResponseEntity<List<RetrievedChunkResponse>> searchDocument(@PathVariable Long workspaceId, @PathVariable Long documentId, @Valid @RequestBody SearchRequest request, @AuthenticationPrincipal CustomUserDetails principal){
-        List<RetrievedChunkResponse> results= documentService.searchDocuments(workspaceId,documentId,principal.getUser(),request.question(),request.topK());
-        return ResponseEntity.ok(results);
-    }
-
     @PostMapping("/{documentId}/chat")
     public ResponseEntity<ChatResponse> chatWithDocument(
             @PathVariable Long workspaceId,

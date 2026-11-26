@@ -9,6 +9,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     List<Message> findByConversation_IdOrderByCreatedAtAsc(Long conversationId);
     //We need to display messages in chronological order
 
+    //counts messages without loading all of them
     long countByConversation_Id(Long conversationId);
 
 }

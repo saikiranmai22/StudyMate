@@ -6,6 +6,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import tools.jackson.databind.JsonNode;
 
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -27,9 +28,13 @@ public class Message {
     @Column(nullable = false, columnDefinition = "LONGTEXT")
     private String content;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "JSON")
-    private JsonNode sources;
+//    @JdbcTypeCode(SqlTypes.JSON)
+//    @Column(columnDefinition = "JSON")
+//    private JsonNode sources;
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String sources;
+
     //For ordinary user messages, sources can be null. the agents message will have a source
     //We are storing source metadata, not the PDF text itself. The actual extracted text is stored in document_chunks
 
@@ -41,7 +46,7 @@ public class Message {
         // Required by JPA
     }
 
-    public Message(Conversation conversation, MessageRole role, String content, JsonNode sources) {
+    public Message(Conversation conversation, MessageRole role, String content, String sources) {
         this.conversation = conversation;
         this.role = role;
         this.content = content;
@@ -64,7 +69,7 @@ public class Message {
         return content;
     }
 
-    public JsonNode getSources() {
+    public String getSources() {
         return sources;
     }
 
