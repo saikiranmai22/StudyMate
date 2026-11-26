@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Service
 public class GeminiEmbeddingClient {
-    private final RestClient restClient;
+    private final RestClient restClient; //HTTP client used to communicate with Gemini
     private final String apiKey;
     private final String model;
     private final int dimensions;
@@ -29,9 +29,10 @@ public class GeminiEmbeddingClient {
         this.dimensions=dimensions;
         //This creates an HTTP client. We use it to communicate with Google's API from our Spring Boot backend.
         this.restClient=RestClient.builder().baseUrl("https://generativelanguage.googleapis.com").build();
+        //The base URL is Google's API address. You'll append the specific endpoint when sending a request.
     }
 
-    public List<Double> generateDocumentEmbedding(String title, String content){
+    public List<Double> generateDocumentEmbedding(String title, String content){ //content: the actual text of one document chunk.
         if(apiKey==null ||apiKey.isBlank()){
             throw new IllegalStateException("Gemini API key is not configured");
         }
@@ -57,17 +58,20 @@ public class GeminiEmbeddingClient {
         );
 
         try{
+            //Sending the HTTP request
             JsonNode response=restClient.post() //http post request
                     .uri("/v1beta/models/{model}:embedContent",model)//api end point
                     .header("x-goog-api-key",apiKey)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(requestBody)
+                    .body(requestBody) //Attaches the JSON request body you constructed earlier
                     .retrieve()
-                    .body(JsonNode.class);
+                    .body(JsonNode.class); //Google sends a JSON response
 
             if(response==null){
                 throw new IllegalStateException("Gemini returned an empty response");
             }
+            //Extract the values
+            //JsonNode.path: It lets you navigate through JSON objects by field name.
             JsonNode values= response.path("embedding").path("values");
 
             if(!values.isArray()){

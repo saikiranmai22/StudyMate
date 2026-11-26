@@ -1,8 +1,10 @@
 package com.studymate.studymate.document.controller;
 
 import com.studymate.studymate.auth.security.CustomUserDetails;
-import com.studymate.studymate.document.dto.DocumentResponse;
+import com.studymate.studymate.document.dto.*;
+import com.studymate.studymate.document.service.DocumentChatService;
 import com.studymate.studymate.document.service.DocumentService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +18,11 @@ import java.util.List;
 @RequestMapping("/api/workspaces/{workspaceId}/documents")
 public class DocumentController {
     private final DocumentService documentService;
-    public DocumentController(DocumentService documentService){
+    private final DocumentChatService documentChatService;
+
+    public DocumentController(DocumentService documentService, DocumentChatService documentChatService){
         this.documentService=documentService;
+        this.documentChatService= documentChatService;
     }
 
     @PostMapping(consumes= MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -44,6 +49,23 @@ public class DocumentController {
             @AuthenticationPrincipal CustomUserDetails principal
     ){
         DocumentResponse response= documentService.getDocument(workspaceId,documentId,principal.getUser());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{documentId}/search")
+    public ResponseEntity<List<RetrievedChunkResponse>> searchDocument(@PathVariable Long workspaceId, @PathVariable Long documentId, @Valid @RequestBody SearchRequest request, @AuthenticationPrincipal CustomUserDetails principal){
+        List<RetrievedChunkResponse> results= documentService.searchDocuments(workspaceId,documentId,principal.getUser(),request.question(),request.topK());
+        return ResponseEntity.ok(results);
+    }
+
+    @PostMapping("/{documentId}/chat")
+    public ResponseEntity<ChatResponse> chatWithDocument(
+            @PathVariable Long workspaceId,
+            @PathVariable Long documentId,
+            @Valid @RequestBody ChatRequest request,
+            @AuthenticationPrincipal CustomUserDetails principal
+            ){
+        ChatResponse response= documentChatService.askQuestion(workspaceId,documentId,principal.getUser(),request);
         return ResponseEntity.ok(response);
     }
 }

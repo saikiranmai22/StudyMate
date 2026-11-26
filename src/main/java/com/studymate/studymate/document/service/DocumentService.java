@@ -2,6 +2,7 @@ package com.studymate.studymate.document.service;
 
 import com.studymate.studymate.document.dto.DocumentResponse;
 import com.studymate.studymate.document.dto.PdfExtractionResult;
+import com.studymate.studymate.document.dto.RetrievedChunkResponse;
 import com.studymate.studymate.document.entity.Document;
 import com.studymate.studymate.document.entity.DocumentChunk;
 import com.studymate.studymate.document.entity.DocumentStatus;
@@ -29,11 +30,12 @@ public class DocumentService {
     private final DocumentChunkingService documentChunkingService;
     private final DocumentChunkRepository documentChunkRepository;
     private final DocumentEmbeddingService documentEmbeddingService;
+    private final DocumentRetrievalService documentRetrievalService;
 
     private static final long MAX_FILE_SIZE= 20L * 1024*1024;
 
     public DocumentService(DocumentRepository documentRepository, WorkspaceRepository workspaceRepository, FileStorageService fileStorageService, PdfProcessingService pdfProcessingService,DocumentChunkingService documentChunkingService,
-                           DocumentChunkRepository documentChunkRepository, DocumentEmbeddingService documentEmbeddingService) {
+                           DocumentChunkRepository documentChunkRepository, DocumentEmbeddingService documentEmbeddingService, DocumentRetrievalService documentRetrievalService) {
         this.documentRepository = documentRepository;
         this.workspaceRepository = workspaceRepository;
         this.fileStorageService = fileStorageService;
@@ -41,6 +43,7 @@ public class DocumentService {
         this.documentChunkingService = documentChunkingService;
         this.documentChunkRepository = documentChunkRepository;
         this.documentEmbeddingService=documentEmbeddingService;
+        this.documentRetrievalService=documentRetrievalService;
     }
 
     private void validatePdf(MultipartFile file){
@@ -141,5 +144,17 @@ public class DocumentService {
         Document document=documentRepository.findByIdAndWorkspace_Id(documentId, workspace.getId())
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Document not found"));
         return toResponse(document);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RetrievedChunkResponse> searchDocuments(Long workspaceId, Long documentId, User owner, String question, int topK){
+        // Verify that the user owns the workspace
+        Workspace workspace=findOwnedWorkspace(workspaceId,owner);
+        // Verify that the document belongs to this workspace
+        Document document= documentRepository.findByIdAndWorkspace_Id(documentId,workspace.getId())
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Document not found"));
+
+        // // Retrieve the most relevant chunks.
+        return documentRetrievalService.retrievedChunkResponseList(document.getId(),question,topK);
     }
 }

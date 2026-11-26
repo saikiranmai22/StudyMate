@@ -12,4 +12,6 @@ public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, Lo
 
     long countByDocument_Id(Long documentId);
     //tells us how many chunks were generated for a document.
+
+
 }

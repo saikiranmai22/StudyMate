@@ -22,9 +22,9 @@ public class DocumentEmbeddingService {
             if(chunk.getEmbedding()!=null && !chunk.getEmbedding().isEmpty()){
                 continue;
             }
-
+            //generates for each chunk
             List<Double> embedding= geminiEmbeddingClient.generateDocumentEmbedding(document.getOriginalFilename(),chunk.getContent());
-            chunk.setEmbedding(embedding);
+            chunk.setEmbedding(embedding); //sets the embedding
         }
         document.markCompleted(document.getPageCount(),geminiEmbeddingClient.getModel(), geminiEmbeddingClient.getDimensions());
     }
