@@ -1,0 +1,56 @@
+/* =========================
+   STUDYMATE DARK THEME
+========================= */
+
+:root {
+  color-scheme: dark;
+
+  --bg: #0B1020;
+  --sidebar: #11182B;
+  --surface: #171F35;
+  --surface-hover: #202A43;
+
+  --primary: #8B5CF6;
+  --primary-hover: #7C3AED;
+  --accent: #22D3EE;
+
+  --text: #F1F5F9;
+  --muted: #94A3B8;
+  --border: #29334B;
+
+  --success: #34D399;
+  --danger: #F87171;
+
+  --font-main: "Inter", sans-serif;
+  --font-code: "JetBrains Mono", monospace;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --transition: 180ms ease;
+}
+
+/* =========================
+   LIGHT THEME
+========================= */
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #F8FAFC;
+  --sidebar: #F1F5F9;
+  --surface: #FFFFFF;
+  --surface-hover: #F1F5F9;
+
+  --primary: #7C3AED;
+  --primary-hover: #6D28D9;
+  --accent: #0891B2;
+
+  --text: #172033;
+  --muted: #64748B;
+  --border: #E2E8F0;
+
+  --success: #059669;
+  --danger: #DC2626;
+}
