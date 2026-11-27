@@ -12,4 +12,6 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
 
     Optional<Note> findByIdAndWorkspace_Id(Long noteId, Long workspaceId);
     //Retrieve a particular note only if it belongs to the specified workspace.
+
+    Optional<Note> findByIdAndWorkspace_User_Id(Long noteId, Long userId);
 }

@@ -43,9 +43,43 @@ public class Note {
         // Required by JPA
     }
 
+    public Note(Workspace workspace, String title, String content, Message sourceMessage) {
+        this.workspace = workspace;
+        this.title = title;
+        this.content = content;
+        this.sourceMessage = sourceMessage;
+    }
+
     public void update(String title, String content) {
         this.title = title;
         this.content = content;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public Workspace getWorkspace() {
+        return workspace;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public Message getSourceMessage() {
+        return sourceMessage;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 }
